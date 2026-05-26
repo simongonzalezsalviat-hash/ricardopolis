@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<title>Mis Recetas</title>
+
+<!-- PWA: "Agregar a pantalla de inicio" como app -->
+<meta name="theme-color" content="#C84B1A"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Mis Recetas"/>
+<meta name="application-name" content="Mis Recetas"/>
+
+<!-- App icon (SVG inline, soportado iOS 15+ / Android moderno) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23C84B1A'/><g fill='none' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'><path d='M55 75c0-14 11-25 25-25s25 11 25 25c14 0 25 8 25 22 0 12-10 20-22 20H52c-12 0-22-8-22-20 0-14 11-22 25-22z'/><line x1='55' y1='130' x2='125' y2='130'/></g></svg>"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23C84B1A'/><g fill='none' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'><path d='M55 75c0-14 11-25 25-25s25 11 25 25c14 0 25 8 25 22 0 12-10 20-22 20H52c-12 0-22-8-22-20 0-14 11-22 25-22z'/><line x1='55' y1='130' x2='125' y2='130'/></g></svg>"/>
+
+<!-- Manifest inline (data URI) -->
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Mis Recetas","short_name":"Recetas","description":"App personal de recetas","start_url":".","scope":".","display":"standalone","orientation":"portrait","background_color":"%23f2f2f7","theme_color":"%23C84B1A","icons":[{"src":"data:image/svg%2Bxml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 180 180%27><rect width=%27180%27 height=%27180%27 rx=%2740%27 fill=%27%23C84B1A%27/><g fill=%27none%27 stroke=%27white%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M55 75c0-14 11-25 25-25s25 11 25 25c14 0 25 8 25 22 0 12-10 20-22 20H52c-12 0-22-8-22-20 0-14 11-22 25-22z%27/><line x1=%2755%27 y1=%27130%27 x2=%27125%27 y2=%27130%27/></g></svg>","sizes":"any","type":"image/svg+xml","purpose":"any"}]}'/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2f7;--surface:#fff;--surface-2:#f2f2f7;--border:rgba(0,0,0,.1);
+  --text:#1c1c1e;--text-2:#636366;--text-3:#aeaeb2;
+  --accent:#007aff;--danger:#ff3b30;
+  --shadow:0 2px 10px rgba(0,0,0,.08);--shadow-lg:0 8px 28px rgba(0,0,0,.13);
+  --r:14px;--nav-h:76px;
+}
+[data-theme="dark"]{
+  --bg:#000;--surface:#1c1c1e;--surface-2:#2c2c2e;--border:rgba(255,255,255,.12);
+  --text:#fff;--text-2:#aeaeb2;--text-3:#636366;
+  --shadow:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.55);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
+input,textarea,select{font:inherit;color:inherit}
+
+/* Layout */
+.app{display:flex;flex-direction:column;min-height:100dvh}
+.screen{flex:1;overflow-y:auto;padding-bottom:calc(var(--nav-h) + 12px)}
+.inner{max-width:600px;margin:0 auto;padding:0 16px}
+
+/* Bottom nav */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;align-items:flex-start;padding-top:10px;
+  padding-bottom:env(safe-area-inset-bottom);z-index:100;
+}
+.nav-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 4px;font-size:10px;font-weight:500;color:var(--text-3);
+  transition:color .15s;-webkit-tap-highlight-color:transparent;
+}
+.nav-tab.active{color:var(--accent)}
+.nav-tab-add{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;
+}
+.nav-add-btn{
+  width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center;box-shadow:0 3px 12px rgba(0,122,255,.4);
+  transition:transform .12s;
+}
+.nav-add-btn:active{transform:scale(.92)}
+
+/* Page header */
+.page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 16px 10px;max-width:600px;margin:0 auto;
+}
+.page-title{font-size:26px;font-weight:700;letter-spacing:-.4px}
+
+/* Cards */
+.recipe-row{
+  background:var(--surface);border-radius:12px;
+  display:flex;align-items:center;gap:12px;padding:10px;
+  cursor:pointer;box-shadow:var(--shadow);
+  -webkit-tap-highlight-color:transparent;transition:opacity .1s;
+}
+.recipe-row:active{opacity:.7}
+.recipe-row-thumb{width:54px;height:54px;border-radius:10px;flex-shrink:0;overflow:hidden}
+.recipe-row-title{font-size:14.5px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recipe-row-meta{font-size:12px;color:var(--text-2)}
+
+.cat-card{
+  background:var(--surface);border-radius:var(--r);padding:14px;
+  cursor:pointer;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.cat-card:active{opacity:.7}
+.cat-blob{position:absolute;right:-18px;top:-18px;width:72px;height:72px;border-radius:50%;opacity:.18}
+
+/* Forms */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.input{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface-2);font-size:15px;outline:none;transition:border-color .15s}
+.input:focus{border-color:var(--accent)}
+select.input{appearance:none;-webkit-appearance:none}
+.textarea{min-height:76px;resize:vertical}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 18px;height:44px;border-radius:10px;font-size:15px;font-weight:600;transition:opacity .12s,transform .08s}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1.5px solid var(--border)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-ghost{background:none;color:var(--accent);padding:0 8px;height:34px;font-size:13px;font-weight:600}
+.btn-full{width:100%}
+.btn:disabled{opacity:.45;pointer-events:none}
+.icon-btn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--text-2);transition:background .12s}
+
+/* Modal — sheet from bottom */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);display:flex;align-items:flex-end;z-index:300}
+.sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));width:100%;max-height:88dvh;overflow-y:auto}
+.handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 18px}
+.sheet h2{font-size:19px;font-weight:700;margin-bottom:4px}
+.sheet-sub{font-size:13px;color:var(--text-2);margin-bottom:18px}
+.sheet-actions{display:flex;gap:10px;margin-top:18px}
+.sheet-actions .btn{flex:1}
+
+/* Recipe detail */
+.recipe-hero{width:100%;aspect-ratio:4/3;overflow:hidden;position:relative;background:var(--surface-2)}
+.recipe-hero img{width:100%;height:100%;object-fit:cover}
+.recipe-hero-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase}
+.recipe-content{padding:18px 16px 8px;max-width:600px;margin:0 auto}
+.recipe-title{font-size:24px;font-weight:700;letter-spacing:-.4px;margin-bottom:8px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--surface-2);color:var(--text-2)}
+.pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.section-title{font-size:17px;font-weight:700;margin-bottom:12px}
+.ing-list{list-style:none;display:flex;flex-direction:column;gap:2px;margin-bottom:22px}
+.ing-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .1s}
+.ing-item:active{background:var(--surface-2)}
+.ing-item.done{opacity:.4}
+.ing-item.done .ing-name{text-decoration:line-through}
+.ing-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:grid;place-items:center;transition:background .15s,border-color .15s}
+.ing-item.done .ing-check{background:var(--accent);border-color:var(--accent)}
+.step-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
+.step-item{display:flex;gap:13px}
+.step-num{width:26px;height:26px;border-radius:50%;flex-shrink:0;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;margin-top:3px;transition:background .15s}
+.step-item.done .step-num{background:var(--text-3)}
+.step-text{font-size:15px;line-height:1.55;flex:1;padding-top:3px}
+.timer-btn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface-2);color:var(--accent);transition:background .12s}
+.timer-btn.running{background:rgba(0,122,255,.13)}
+.timer-done{color:var(--text-3)}
+
+/* Search */
+.search-wrap{display:flex;align-items:center;gap:9px;background:var(--surface);border-radius:12px;padding:10px 13px;box-shadow:var(--shadow)}
+.search-wrap input{flex:1;background:none;border:none;outline:none;font-size:15px}
+
+/* Chips */
+.chip-row{display:flex;gap:8px;overflow-x:auto;padding:0 16px 12px;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:20px;font-size:13px;font-weight:500;background:var(--surface);border:1.5px solid var(--border);white-space:nowrap;cursor:pointer;transition:border-color .12s,color .12s}
+.chip.active{border-color:var(--accent);color:var(--accent)}
+.cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Color picker */
+.swatch{width:30px;height:30px;border-radius:50%;cursor:pointer;transition:transform .1s}
+.swatch.on{outline:3px solid var(--text);outline-offset:2px}
+
+/* Form rows */
+.ing-row{display:grid;grid-template-columns:1fr 64px 72px 34px;gap:7px;margin-bottom:7px;align-items:start}
+.step-row{display:grid;grid-template-columns:1fr 84px 34px;gap:7px;margin-bottom:8px;align-items:start}
+
+/* Spinner */
+.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(128,128,128,.25);border-top-color:currentColor;animation:rot .65s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* Empty state */
+.empty{text-align:center;padding:44px 20px;color:var(--text-2)}
+.empty h3{font-size:17px;font-weight:600;color:var(--text);margin-bottom:6px}
+.empty p{font-size:14px;line-height:1.5}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(var(--nav-h) + 14px);left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:500;z-index:400;white-space:nowrap;pointer-events:none;animation:fadeup .18s ease}
+@keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* Login */
+.login-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;background:var(--bg)}
+.login-card{width:100%;max-width:390px;background:var(--surface);border-radius:20px;padding:28px 24px;box-shadow:var(--shadow-lg)}
+.login-title{font-size:26px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:14px;color:var(--text-2);margin-bottom:24px}
+.err{font-size:13px;color:var(--danger);margin-bottom:10px}
+
+@media(max-width:380px){
+  .ing-row{grid-template-columns:1fr 54px 62px 30px}
+  .step-row{grid-template-columns:1fr 74px 30px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+const sb = supabase.createClient(
+  'https://gobaojoylpqdtxmtkjop.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvYmFvam95bHBxZHR4bXRram9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzkxNjAsImV4cCI6MjA5NDUxNTE2MH0.N2lN0WoG8_KzkSiQEaTspIteqcHvj8gYvRv4u_NQN0U'
+);
+
+// ── Icons ────────────────────────────────────────────────────────────────────
+const Svg = ({size=20,sw=1.8,children}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
+const IHome  = ({s=20}) => <Svg size={s}><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Svg>;
+const IGrid  = ({s=20}) => <Svg size={s}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></Svg>;
+const IBook  = ({s=20}) => <Svg size={s}><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></Svg>;
+const IUser  = ({s=20}) => <Svg size={s}><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></Svg>;
+const IPlus  = ({s=20}) => <Svg size={s}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Svg>;
+const IMinus = ({s=20}) => <Svg size={s}><line x1="5" y1="12" x2="19" y2="12"/></Svg>;
+const IBack  = ({s=20}) => <Svg size={s}><polyline points="15 18 9 12 15 6"/></Svg>;
+const IEdit  = ({s=20}) => <Svg size={s}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></Svg>;
+const ITrash = ({s=20}) => <Svg size={s}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></Svg>;
+const IClock = ({s=20}) => <Svg size={s}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Svg>;
+const ICheck = ({s=20}) => <Svg size={s} sw={2.5}><polyline points="20 6 9 17 4 12"/></Svg>;
+const IPlay  = ({s=20}) => <Svg size={s}><polygon points="5 3 19 12 5 21 5 3"/></Svg>;
+const IPause = ({s=20}) => <Svg size={s}><line x1="6" y1="4" x2="6" y2="20"/><line x1="18" y1="4" x2="18" y2="20"/></Svg>;
+const ISearch= ({s=20}) => <Svg size={s}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Svg>;
+const ISun   = ({s=20}) => <Svg size={s}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></Svg>;
+const IMoon  = ({s=20}) => <Svg size={s}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></Svg>;
+const IImg   = ({s=20}) => <Svg size={s}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></Svg>;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const COLORS = ['#ff9500','#ff2d55','#5e5ce6','#34c759','#bf5af2','#0a84ff','#ffb340','#bf8a5b','#32ade6','#ff6961'];
+
+function fmt(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function Thumb({ url, color, label, style={} }) {
+  if (url) return <img src={url} alt={label} style={{width:'100%',height:'100%',objectFit:'cover',...style}}/>;
+  return (
+    <div style={{width:'100%',height:'100%',background:color||'#636366',display:'flex',alignItems:'center',
+      justifyContent:'center',fontSize:9,fontWeight:600,color:'rgba(255,255,255,.5)',textTransform:'uppercase',...style}}>
+      {(label||'').slice(0,18)}
+    </div>
+  );
+}
+
+function ColorPicker({ value, onChange }) {
+  return (
+    <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+      {COLORS.map(c => (
+        <button key={c} className={`swatch${value===c?' on':''}`} style={{background:c}} onClick={()=>onChange(c)}/>
+      ))}
+    </div>
+  );
+}
+
+// ── Login ────────────────────────────────────────────────────────────────────
+function Login({ onLogin }) {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [pass, setPass]   = useState('');
+  const [err, setErr]     = useState('');
+  const [busy, setBusy]   = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!email.trim() || !pass) { setErr('Completá los campos.'); return; }
+    setBusy(true); setErr('');
+    try {
+      if (mode === 'login') {
+        const { data, error } = await sb.auth.signInWithPassword({ email: email.trim(), password: pass });
+        if (error) throw error;
+        onLogin(data.user);
+      } else {
+        const { data, error } = await sb.auth.signUp({ email: email.trim(), password: pass });
+        if (error) throw error;
+        if (!data.user?.email_confirmed_at) setErr('Revisá tu correo para confirmar la cuenta.');
+        else onLogin(data.user);
+      }
+    } catch(e) { setErr(e.message || 'Error de autenticación.'); }
+    setBusy(false);
+  };
+
+  return (
+    <div className="login-wrap">
+      <div className="login-card">
+        <div style={{fontSize:36,marginBottom:10}}>🍳</div>
+        <h1 className="login-title">Mis Recetas</h1>
+        <p className="login-sub">{mode==='login'?'Iniciá sesión para continuar.':'Creá tu cuenta gratuita.'}</p>
+        {err && <p className="err">{err}</p>}
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>Email</label>
+            <input className="input" type="email" autoComplete="email" value={email}
+              onChange={e=>setEmail(e.target.value)} placeholder="tu@email.com"/>
+          </div>
+          <div className="field">
+            <label>Contraseña</label>
+            <input className="input" type="password"
+              autoComplete={mode==='login'?'current-password':'new-password'}
+              value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••"/>
+          </div>
+          <button className="btn btn-primary btn-full" type="submit" disabled={busy}>
+            {busy ? <div className="spin" style={{color:'#fff'}}/> : (mode==='login'?'Entrar':'Crear cuenta')}
+          </button>
+        </form>
+        <button onClick={()=>{setMode(m=>m==='login'?'signup':'login');setErr('');}}
+          style={{display:'block',marginTop:14,width:'100%',textAlign:'center',fontSize:13,color:'var(--accent)',fontWeight:500}}>
+          {mode==='login'?'¿No tenés cuenta? Registrate':'¿Ya tenés cuenta? Entrá'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Home ─────────────────────────────────────────────────────────────────────
+function Home({ recipes, categories, go, profile }) {
+  const name = profile?.display_name?.split(' ')[0] || 'Chef';
+  const today = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  const recent = recipes.slice(0,8);
+
+  return (
+    <div>
+      <div style={{padding:'24px 16px 16px',maxWidth:600,margin:'0 auto'}}>
+        <p style={{fontSize:13,color:'var(--text-2)',marginBottom:2}}>
+          {today.charAt(0).toUpperCase()+today.slice(1)}
+        </p>
+        <h1 style={{fontSize:26,fontWeight:700,marginBottom:16}}>Hola, {name} 👋</h1>
+
+        {/* Stats row */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:22}}>
+          {[
+            {label:'Recetas',val:recipes.length},
+            {label:'Categorías',val:categories.length},
+          ].map(s=>(
+            <div key={s.label} style={{background:'var(--surface)',borderRadius:14,padding:'14px 16px',boxShadow:'var(--shadow)'}}>
+              <div style={{fontSize:26,fontWeight:700,letterSpacing:'-.5px'}}>{s.val}</div>
+              <div style={{fontSize:12,color:'var(--text-2)',fontWeight:500,marginTop:2}}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Categories */}
+        {categories.length > 0 && (
+          <>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+              <h2 style={{fontSize:17,fontWeight:700}}>Categorías</h2>
+              <button className="btn btn-ghost" onClick={()=>go('cats')}>Ver todas</button>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(130px,1fr))',gap:9,marginBottom:22}}>
+              {categories.slice(0,4).map(cat=>(
+                <div key={cat.id} className="cat-card" onClick={()=>go('cat',cat.id)}>
+                  <div className="cat-blob" style={{background:cat.color}}/>
+                  <div style={{display:'flex',alignItems:'center',gap:5}}>
+                    <span className="cat-dot" style={{background:cat.color,width:7,height:7}}/>
+                    <span style={{fontSize:11,color:'var(--text-2)',fontWeight:500}}>{cat.count||0} recetas</span>
+                  </div>
+                  <div style={{fontSize:14,fontWeight:600,marginTop:6}}>{cat.name}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Recent recipes */}
+        {recent.length > 0 ? (
+          <>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+              <h2 style={{fontSize:17,fontWeight:700}}>Recientes</h2>
+              <button className="btn btn-ghost" onClick={()=>go('recipes')}>Ver todas</button>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:9}}>
+              {recent.map(r=>{
+                const cat = categories.find(c=>c.id===r.category_id);
+                return (
+                  <div key={r.id} className="recipe-row" onClick={()=>go('recipe',r.id)}>
+                    <div className="recipe-row-thumb"><Thumb url={r.cover_url} color={r.cover_color||cat?.color} label={r.title}/></div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div className="recipe-row-title">{r.title}</div>
+                      <div className="recipe-row-meta">
+                        {cat&&<span style={{color:cat.color}}>{cat.name}</span>}
+                        {r.minutes&&<span>{cat?' · ':''}{r.minutes} min</span>}
+                        {r.difficulty&&<span> · {r.difficulty}</span>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="empty">
+            <h3>Sin recetas todavía</h3>
+            <p>Tocá + para agregar tu primera receta.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── All Recipes ───────────────────────────────────────────────────────────────
+function Recipes({ recipes, categories, go }) {
+  const [q, setQ] = useState('');
+  const [cat, setCat] = useState('');
+
+  const list = useMemo(() => {
+    let r = recipes;
+    if (cat) r = r.filter(x=>x.category_id===cat);
+    if (q.length>1) r = r.filter(x=>x.title.toLowerCase().includes(q.toLowerCase())||(x.description||'').toLowerCase().includes(q.toLowerCase()));
+    return r;
+  }, [recipes,q,cat]);
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Mis recetas</h1>
+      </div>
+      <div style={{padding:'0 16px 10px',maxWidth:600,margin:'0 auto'}}>
+        <div className="search-wrap" style={{marginBottom:12}}>
+          <ISearch s={15}/><input placeholder="Buscar recetas..." value={q} onChange={e=>setQ(e.target.value)}/>
+        </div>
+      </div>
+      {categories.length>0&&(
+        <div className="chip-row">
+          <button className={`chip${!cat?' active':''}`} onClick={()=>setCat('')}>Todas</button>
+          {categories.map(c=>(
+            <button key={c.id} className={`chip${cat===c.id?' active':''}`} onClick={()=>setCat(c.id)}>
+              <span className="cat-dot" style={{background:c.color,width:6,height:6}}/>{c.name}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="inner">
+        {list.length===0?(
+          <div className="empty">
+            <h3>{q||cat?'Sin resultados':'Sin recetas'}</h3>
+            <p>{q||cat?'Probá con otros términos.':'Tocá + para agregar tu primera receta.'}</p>
+          </div>
+        ):(
+          <div style={{display:'flex',flexDirection:'column',gap:9}}>
+            {list.map(r=>{
+              const c = categories.find(x=>x.id===r.category_id);
+              return (
+                <div key={r.id} className="recipe-row" onClick={()=>go('recipe',r.id)}>
+                  <div className="recipe-row-thumb"><Thumb url={r.cover_url} color={r.cover_color||c?.color} label={r.title}/></div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div className="recipe-row-title">{r.title}</div>
+                    <div className="recipe-row-meta">
+                      {c&&<span style={{color:c.color}}>{c.name}</span>}
+                      {r.minutes&&<span>{c?' · ':''}{r.minutes} min</span>}
+                      {r.difficulty&&<span> · {r.difficulty}</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Categories ────────────────────────────────────────────────────────────────
+function Categories({ categories, go, onCreate, onDelete, onUpdate }) {
+  const [modal, setModal] = useState(null); // null | 'create' | cat-object
+  const [name, setName]   = useState('');
+  const [color, setColor] = useState(COLORS[0]);
+  const [busy, setBusy]   = useState(false);
+
+  const openEdit = (cat) => { setModal(cat); setName(cat.name); setColor(cat.color||COLORS[0]); };
+  const openCreate = () => { setModal('create'); setName(''); setColor(COLORS[0]); };
+  const close = () => setModal(null);
+
+  const save = async () => {
+    if (!name.trim()) return;
+    setBusy(true);
+    if (modal==='create') await onCreate({ name:name.trim(), color });
+    else await onUpdate({ id:modal.id, name:name.trim(), color });
+    setBusy(false); close();
+  };
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Categorías</h1>
+        <button className="btn btn-primary" style={{height:36,padding:'0 14px',fontSize:13}} onClick={openCreate}>
+          <IPlus s={14}/> Nueva
+        </button>
+      </div>
+      <div className="inner">
+        {categories.length===0?(
+          <div className="empty"><h3>Sin categorías</h3><p>Creá categorías para organizar tus recetas.</p></div>
+        ):(
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(145px,1fr))',gap:10}}>
+            {categories.map(cat=>(
+              <div key={cat.id} className="cat-card" style={{cursor:'default'}}>
+                <div className="cat-blob" style={{background:cat.color}}/>
+                <div style={{display:'flex',justifyContent:'flex-end',gap:4,marginBottom:4}}>
+                  <button className="icon-btn" style={{width:28,height:28}} onClick={()=>openEdit(cat)}><IEdit s={13}/></button>
+                  <button className="icon-btn" style={{width:28,height:28,color:'var(--danger)'}} onClick={()=>onDelete(cat.id)}><ITrash s={13}/></button>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:5}}>
+                  <span className="cat-dot" style={{background:cat.color}}/>
+                  <span style={{fontSize:11,color:'var(--text-2)',fontWeight:500}}>{cat.count||0} recetas</span>
+                </div>
+                <div style={{fontSize:14,fontWeight:600,marginTop:5,cursor:'pointer'}} onClick={()=>go('cat',cat.id)}>{cat.name}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {modal && (
+        <div className="backdrop" onClick={close}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="handle"/>
+            <h2>{modal==='create'?'Nueva categoría':'Editar categoría'}</h2>
+            <div className="field" style={{marginTop:14}}>
+              <label>Nombre *</label>
+              <input className="input" autoFocus placeholder="Ej. Postres, Vegano..." value={name}
+                onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&save()}/>
+            </div>
+            <div className="field">
+              <label>Color</label>
+              <ColorPicker value={color} onChange={setColor}/>
+            </div>
+            <div className="sheet-actions">
+              <button className="btn btn-secondary" onClick={close}>Cancelar</button>
+              <button className="btn btn-primary" onClick={save} disabled={busy||!name.trim()}>
+                {busy?<div className="spin" style={{color:'#fff'}}/>:(modal==='create'?'Crear':'Guardar')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Category detail ───────────────────────────────────────────────────────────
+function CatDetail({ catId, categories, recipes, go, onBack }) {
+  const cat = categories.find(c=>c.id===catId);
+  const list = recipes.filter(r=>r.category_id===catId);
+  const [q, setQ] = useState('');
+  const filtered = q.length>1 ? list.filter(r=>r.title.toLowerCase().includes(q.toLowerCase())) : list;
+
+  return (
+    <div>
+      <div className="page-header">
+        <button className="icon-btn" onClick={onBack}><IBack s={18}/></button>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          {cat&&<span className="cat-dot" style={{background:cat.color,width:10,height:10}}/>}
+          <h1 style={{fontSize:19,fontWeight:700}}>{cat?.name||'Categoría'}</h1>
+        </div>
+        <div style={{width:36}}/>
+      </div>
+      <div className="inner">
+        {list.length>3&&(
+          <div className="search-wrap" style={{marginBottom:14}}>
+            <ISearch s={14}/><input placeholder="Buscar..." value={q} onChange={e=>setQ(e.target.value)}/>
+          </div>
+        )}
+        {filtered.length===0?(
+          <div className="empty"><h3>Sin recetas</h3><p>Al crear o editar una receta, asignale esta categoría.</p></div>
+        ):(
+          <div style={{display:'flex',flexDirection:'column',gap:9}}>
+            {filtered.map(r=>(
+              <div key={r.id} className="recipe-row" onClick={()=>go('recipe',r.id)}>
+                <div className="recipe-row-thumb"><Thumb url={r.cover_url} color={r.cover_color||cat?.color} label={r.title}/></div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="recipe-row-title">{r.title}</div>
+                  <div className="recipe-row-meta">{r.minutes&&`${r.minutes} min`}{r.difficulty&&` · ${r.difficulty}`}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Menus ────────────────────────────────────────────────────────────────────
+function Menus({ menus, go, onCreate, onDelete }) {
+  const [show, setShow] = useState(false);
+  const [title, setTitle] = useState('');
+  const [color, setColor] = useState(COLORS[0]);
+  const [busy, setBusy]   = useState(false);
+
+  const save = async () => {
+    if (!title.trim()) return;
+    setBusy(true);
+    await onCreate({ title:title.trim(), cover:color });
+    setBusy(false); setShow(false); setTitle(''); setColor(COLORS[0]);
+  };
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Mis menús</h1>
+        <button className="btn btn-primary" style={{height:36,padding:'0 14px',fontSize:13}} onClick={()=>setShow(true)}>
+          <IPlus s={14}/> Nuevo
+        </button>
+      </div>
+      <div className="inner">
+        {menus.length===0?(
+          <div className="empty"><h3>Sin menús</h3><p>Creá colecciones de recetas para organizarte.</p></div>
+        ):(
+          <div style={{display:'flex',flexDirection:'column',gap:9}}>
+            {menus.map(m=>(
+              <div key={m.id} className="recipe-row" onClick={()=>go('menu',m.id)}>
+                <div className="recipe-row-thumb"><Thumb url={m.cover_url} color={m.cover} label={m.title}/></div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="recipe-row-title">{m.title}</div>
+                  <div className="recipe-row-meta">{m.recipeCount||0} receta{m.recipeCount!==1?'s':''}</div>
+                </div>
+                <button className="icon-btn" style={{width:32,height:32,color:'var(--danger)',flexShrink:0}}
+                  onClick={e=>{e.stopPropagation();onDelete(m.id);}}>
+                  <ITrash s={14}/>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {show&&(
+        <div className="backdrop" onClick={()=>setShow(false)}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="handle"/>
+            <h2>Nuevo menú</h2>
+            <div className="field" style={{marginTop:14}}>
+              <label>Nombre *</label>
+              <input className="input" autoFocus placeholder="Ej. Cena del domingo..." value={title}
+                onChange={e=>setTitle(e.target.value)} onKeyDown={e=>e.key==='Enter'&&save()}/>
+            </div>
+            <div className="field">
+              <label>Color</label>
+              <ColorPicker value={color} onChange={setColor}/>
+            </div>
+            <div className="sheet-actions">
+              <button className="btn btn-secondary" onClick={()=>setShow(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={save} disabled={busy||!title.trim()}>
+                {busy?<div className="spin" style={{color:'#fff'}}/>:'Crear'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Menu detail ───────────────────────────────────────────────────────────────
+function MenuDetail({ menuId, menus, recipes, categories, go, onBack }) {
+  const menu = menus.find(m=>m.id===menuId);
+  const [ids, setIds]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [q, setQ]         = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    sb.from('menu_recipes').select('recipe_id').eq('menu_id',menuId)
+      .then(({data})=>{ setIds((data||[]).map(x=>x.recipe_id)); setLoading(false); });
+  }, [menuId]);
+
+  const menuRecs = recipes.filter(r=>ids.includes(r.id));
+  const toAdd = recipes.filter(r=>!ids.includes(r.id)&&(!q||r.title.toLowerCase().includes(q.toLowerCase())));
+
+  const add = async (rid) => {
+    await sb.from('menu_recipes').insert({menu_id:menuId,recipe_id:rid});
+    setIds(p=>[...p,rid]);
+  };
+  const remove = async (rid) => {
+    await sb.from('menu_recipes').delete().eq('menu_id',menuId).eq('recipe_id',rid);
+    setIds(p=>p.filter(x=>x!==rid));
+  };
+
+  if (!menu) return null;
+
+  return (
+    <div>
+      <div style={{position:'relative',height:170,overflow:'hidden',background:'var(--surface-2)'}}>
+        <Thumb url={menu.cover_url} color={menu.cover} label={menu.title} style={{position:'absolute',inset:0}}/>
+        <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.58) 100%)'}}/>
+        <button className="icon-btn" onClick={onBack}
+          style={{position:'absolute',top:16,left:16,background:'rgba(0,0,0,.4)',color:'#fff',backdropFilter:'blur(4px)'}}>
+          <IBack s={18}/>
+        </button>
+        <button className="icon-btn" onClick={()=>setShowAdd(true)}
+          style={{position:'absolute',top:16,right:16,background:'rgba(0,0,0,.4)',color:'#fff',backdropFilter:'blur(4px)'}}>
+          <IPlus s={18}/>
+        </button>
+        <div style={{position:'absolute',bottom:16,left:16,color:'#fff'}}>
+          <h1 style={{fontSize:22,fontWeight:700,margin:0}}>{menu.title}</h1>
+          <p style={{margin:'3px 0 0',fontSize:13,opacity:.8}}>{menuRecs.length} receta{menuRecs.length!==1?'s':''}</p>
+        </div>
+      </div>
+
+      <div className="inner" style={{marginTop:14}}>
+        {loading ? (
+          <div style={{display:'flex',justifyContent:'center',padding:32}}>
+            <div className="spin" style={{width:26,height:26,borderTopColor:'var(--accent)',borderColor:'var(--border)'}}/>
+          </div>
+        ) : menuRecs.length===0 ? (
+          <div className="empty"><h3>Menú vacío</h3><p>Tocá + para agregar recetas.</p></div>
+        ) : (
+          <div style={{display:'flex',flexDirection:'column',gap:9}}>
+            {menuRecs.map(r=>{
+              const cat = categories.find(c=>c.id===r.category_id);
+              return (
+                <div key={r.id} style={{display:'flex',borderRadius:12,overflow:'hidden',background:'var(--surface)',boxShadow:'var(--shadow)'}}>
+                  <div style={{flex:1,display:'flex',alignItems:'center',gap:12,padding:10,cursor:'pointer'}} onClick={()=>go('recipe',r.id)}>
+                    <div className="recipe-row-thumb"><Thumb url={r.cover_url} color={r.cover_color||cat?.color} label={r.title}/></div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div className="recipe-row-title">{r.title}</div>
+                      <div className="recipe-row-meta">{r.minutes&&`${r.minutes} min`}{r.difficulty&&` · ${r.difficulty}`}</div>
+                    </div>
+                  </div>
+                  <button onClick={()=>remove(r.id)} style={{width:44,background:'none',color:'var(--danger)',display:'grid',placeItems:'center',flexShrink:0,borderLeft:'1px solid var(--border)'}}>
+                    <IMinus s={16}/>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {showAdd&&(
+        <div className="backdrop" onClick={()=>setShowAdd(false)}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="handle"/>
+            <h2>Agregar receta</h2>
+            <div className="search-wrap" style={{margin:'12px 0',background:'var(--surface-2)'}}>
+              <ISearch s={14}/><input placeholder="Buscar..." value={q} onChange={e=>setQ(e.target.value)} autoFocus/>
+            </div>
+            <div style={{maxHeight:300,overflowY:'auto',display:'flex',flexDirection:'column',gap:8}}>
+              {toAdd.length===0?(
+                <p style={{textAlign:'center',color:'var(--text-3)',fontSize:13,padding:'16px 0'}}>No hay más recetas para agregar</p>
+              ):toAdd.map(r=>(
+                <button key={r.id} onClick={()=>add(r.id)}
+                  style={{display:'flex',alignItems:'center',gap:11,padding:'9px 12px',borderRadius:10,background:'var(--surface-2)',textAlign:'left'}}>
+                  <div style={{width:42,height:42,borderRadius:8,overflow:'hidden',flexShrink:0}}>
+                    <Thumb url={r.cover_url} color={r.cover_color} label={r.title}/>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:600,fontSize:14,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.title}</div>
+                    <div style={{fontSize:12,color:'var(--text-2)'}}>{r.minutes&&`${r.minutes} min`}</div>
+                  </div>
+                  <span style={{color:'var(--accent)',fontSize:13,fontWeight:600,flexShrink:0}}>Agregar</span>
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-secondary btn-full" style={{marginTop:14}} onClick={()=>setShowAdd(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Recipe detail ─────────────────────────────────────────────────────────────
+function RecipeDetail({ recipe, categories, onEdit, onDelete, onBack }) {
+  const [checked, setChecked]   = useState({});
+  const [doneSt, setDoneSt]     = useState({});
+  const [timers, setTimers]     = useState({});
+  const [confirmDel, setConfirmDel] = useState(false);
+  const cat = categories.find(c=>c.id===recipe.category_id);
+
+  useEffect(() => {
+    const ivals = {};
+    Object.entries(timers).forEach(([i,t]) => {
+      if (t.running && t.rem > 0) {
+        ivals[i] = setInterval(() => {
+          setTimers(prev => {
+            const cur = prev[i];
+            if (!cur?.running || cur.rem <= 0) { clearInterval(ivals[i]); return prev; }
+            if (cur.rem === 1) clearInterval(ivals[i]);
+            return { ...prev, [i]: { ...cur, rem: cur.rem-1, running: cur.rem>1 } };
+          });
+        }, 1000);
+      }
+    });
+    return () => Object.values(ivals).forEach(clearInterval);
+  }, [timers]);
+
+  const startT  = (i,s) => setTimers(p=>({...p,[i]:{rem:s,running:true}}));
+  const pauseT  = (i)   => setTimers(p=>({...p,[i]:{...p[i],running:false}}));
+  const resumeT = (i)   => setTimers(p=>({...p,[i]:{...p[i],running:true}}));
+
+  return (
+    <div>
+      <div style={{position:'relative'}}>
+        <div className="recipe-hero">
+          {recipe.cover_url
+            ? <img src={recipe.cover_url} alt={recipe.title}/>
+            : <div className="recipe-hero-placeholder" style={{background:recipe.cover_color||'#636366'}}>{recipe.title}</div>}
+        </div>
+        <button className="icon-btn" onClick={onBack}
+          style={{position:'absolute',top:16,left:16,background:'rgba(0,0,0,.42)',color:'#fff',backdropFilter:'blur(4px)'}}>
+          <IBack s={18}/>
+        </button>
+        <div style={{position:'absolute',top:16,right:16,display:'flex',gap:8}}>
+          <button className="icon-btn" onClick={onEdit}
+            style={{background:'rgba(0,0,0,.42)',color:'#fff',backdropFilter:'blur(4px)'}}><IEdit s={16}/></button>
+          <button className="icon-btn" onClick={()=>setConfirmDel(true)}
+            style={{background:'rgba(0,0,0,.42)',color:'#fff',backdropFilter:'blur(4px)'}}><ITrash s={16}/></button>
+        </div>
+      </div>
+
+      <div className="recipe-content">
+        {cat&&(
+          <div style={{display:'inline-flex',alignItems:'center',gap:6,marginBottom:7}}>
+            <span className="cat-dot" style={{background:cat.color}}/>
+            <span style={{fontSize:13,fontWeight:500,color:'var(--text-2)'}}>{cat.name}</span>
+          </div>
+        )}
+        <h1 className="recipe-title">{recipe.title}</h1>
+        {recipe.description&&<p style={{color:'var(--text-2)',fontSize:14,lineHeight:1.6,marginBottom:14}}>{recipe.description}</p>}
+        <div className="pills">
+          {recipe.minutes&&<span className="pill"><IClock s={12}/> {recipe.minutes} min</span>}
+          {recipe.difficulty&&<span className="pill">{recipe.difficulty}</span>}
+          {recipe.servings&&<span className="pill">{recipe.servings} porc.</span>}
+        </div>
+
+        {recipe.ingredients?.length>0&&(
+          <>
+            <div className="section-title">Ingredientes</div>
+            <ul className="ing-list">
+              {recipe.ingredients.map((ing,i)=>(
+                <li key={i} className={`ing-item${checked[i]?' done':''}`} onClick={()=>setChecked(c=>({...c,[i]:!c[i]}))}>
+                  <div className="ing-check">{checked[i]&&<ICheck s={10}/>}</div>
+                  <span className="ing-name" style={{flex:1}}>{ing.name}</span>
+                  {(ing.qty||ing.unit)&&<span style={{fontSize:13,color:'var(--text-2)',flexShrink:0}}>{ing.qty} {ing.unit}</span>}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {recipe.steps?.length>0&&(
+          <>
+            <div className="section-title">Preparación</div>
+            <ol className="step-list">
+              {recipe.steps.map((step,i)=>{
+                const t = timers[i];
+                const done = !!doneSt[i];
+                return (
+                  <li key={i} className={`step-item${done?' done':''}`}>
+                    <div className="step-num" onClick={()=>setDoneSt(d=>({...d,[i]:!d[i]}))}>
+                      {done?<ICheck s={11}/>:i+1}
+                    </div>
+                    <div style={{flex:1}}>
+                      <div className="step-text">{step.text}</div>
+                      {step.timer&&(
+                        <div>
+                          {!t?(
+                            <button className="timer-btn" onClick={()=>startT(i,step.timer)}>
+                              <IPlay s={11}/> {fmt(step.timer)}
+                            </button>
+                          ):(
+                            <button className={`timer-btn${t.running?' running':''}`}
+                              onClick={()=>t.running?pauseT(i):resumeT(i)}>
+                              {t.running?<IPause s={11}/>:<IPlay s={11}/>}
+                              <span className={t.rem===0?'timer-done':''}>{t.rem===0?'¡Listo!':fmt(t.rem)}</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </>
+        )}
+      </div>
+
+      {confirmDel&&(
+        <div className="backdrop" onClick={()=>setConfirmDel(false)}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="handle"/>
+            <h2>Eliminar receta</h2>
+            <p className="sheet-sub">¿Seguro que querés eliminar "{recipe.title}"? No se puede deshacer.</p>
+            <div className="sheet-actions">
+              <button className="btn btn-secondary" onClick={()=>setConfirmDel(false)}>Cancelar</button>
+              <button className="btn btn-danger" onClick={onDelete}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Recipe Form ───────────────────────────────────────────────────────────────
+function RecipeForm({ recipe, categories, authUser, onSave, onBack, showToast }) {
+  const isEdit = !!recipe;
+  const nid = useRef(200);
+  const mk  = () => nid.current++;
+
+  const [form, setForm] = useState({
+    title: recipe?.title||'',
+    description: recipe?.description||'',
+    category_id: recipe?.category_id||categories[0]?.id||'',
+    minutes: recipe?.minutes||30,
+    servings: recipe?.servings||4,
+    difficulty: recipe?.difficulty||'Fácil',
+    cover_color: recipe?.cover_color||COLORS[0],
+    cover_url: recipe?.cover_url||null,
+  });
+  const [ings, setIngs]   = useState(
+    recipe?.ingredients?.length ? recipe.ingredients.map((x,i)=>({...x,_id:i})) : [{_id:1,name:'',qty:'',unit:''}]
+  );
+  const [steps, setSteps] = useState(
+    recipe?.steps?.length ? recipe.steps.map((x,i)=>({...x,_id:i})) : [{_id:1,text:'',timer:''}]
+  );
+  const [busy, setBusy] = useState(false);
+
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  const uploadCover = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const local = URL.createObjectURL(file);
+    set('cover_url', local);
+    try {
+      const path = `${authUser.id}/${Date.now()}.${file.name.split('.').pop()}`;
+      const { error } = await sb.storage.from('recipe-covers').upload(path, file, {contentType:file.type,upsert:true});
+      if (!error) {
+        const { data:{publicUrl} } = sb.storage.from('recipe-covers').getPublicUrl(path);
+        URL.revokeObjectURL(local);
+        set('cover_url', publicUrl);
+      }
+    } catch(e) {}
+  };
+
+  const addIng  = () => setIngs(a=>[...a,{_id:mk(),name:'',qty:'',unit:''}]);
+  const updIng  = (i,k,v) => setIngs(a=>a.map((x,j)=>j===i?{...x,[k]:v}:x));
+  const remIng  = (i) => setIngs(a=>a.filter((_,j)=>j!==i));
+  const addStep = () => setSteps(a=>[...a,{_id:mk(),text:'',timer:''}]);
+  const updStep = (i,k,v) => setSteps(a=>a.map((x,j)=>j===i?{...x,[k]:v}:x));
+  const remStep = (i) => setSteps(a=>a.filter((_,j)=>j!==i));
+
+  const save = async () => {
+    if (!form.title.trim()) { showToast('El título es obligatorio'); return; }
+    setBusy(true);
+    try {
+      const payload = {
+        title:       form.title.trim(),
+        description: form.description.trim()||null,
+        category_id: form.category_id||null,
+        minutes:     parseInt(form.minutes)||30,
+        servings:    parseInt(form.servings)||4,
+        difficulty:  form.difficulty,
+        cover_color: form.cover_color,
+        cover_url:   form.cover_url||null,
+        visibility:  'private',
+        author_id:   authUser.id,
+      };
+      let rid;
+      if (isEdit) {
+        await sb.from('recipes').update(payload).eq('id',recipe.id);
+        rid = recipe.id;
+        await Promise.all([
+          sb.from('recipe_ingredients').delete().eq('recipe_id',rid),
+          sb.from('recipe_steps').delete().eq('recipe_id',rid),
+        ]);
+      } else {
+        const {data,error} = await sb.from('recipes').insert(payload).select().single();
+        if (error) throw error;
+        rid = data.id;
+      }
+      const vi = ings.filter(i=>i.name.trim());
+      if (vi.length) await sb.from('recipe_ingredients').insert(
+        vi.map((i,pos)=>({recipe_id:rid,name:i.name.trim(),qty:parseFloat(i.qty)||1,unit:i.unit.trim()||'u',position:pos}))
+      );
+      const vs = steps.filter(s=>s.text.trim());
+      if (vs.length) await sb.from('recipe_steps').insert(
+        vs.map((s,pos)=>({recipe_id:rid,text:s.text.trim(),timer_seconds:s.timer?parseInt(s.timer)*60:null,position:pos}))
+      );
+      showToast(isEdit?'Receta actualizada ✓':'¡Receta creada! 🎉');
+      onSave(rid);
+    } catch(e) {
+      showToast('Error al guardar: '+(e.message||'intentá de nuevo'));
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div>
+      <div className="page-header">
+        <button className="icon-btn" onClick={onBack}><IBack s={18}/></button>
+        <h1 style={{fontSize:19,fontWeight:700}}>{isEdit?'Editar receta':'Nueva receta'}</h1>
+        <button className="btn btn-primary" style={{height:36,padding:'0 16px',fontSize:14}} onClick={save} disabled={busy}>
+          {busy?<div className="spin" style={{color:'#fff'}}/>:'Guardar'}
+        </button>
+      </div>
+
+      <div className="inner" style={{paddingBottom:40}}>
+        {/* Cover */}
+        <div style={{marginBottom:18}}>
+          <div style={{borderRadius:12,overflow:'hidden',height:170,marginBottom:10,position:'relative'}}>
+            <Thumb url={form.cover_url} color={form.cover_color} label="portada" style={{position:'absolute',inset:0}}/>
+            {form.cover_url&&(
+              <button onClick={()=>set('cover_url',null)}
+                style={{position:'absolute',top:10,right:10,background:'rgba(0,0,0,.55)',color:'#fff',borderRadius:8,padding:'4px 10px',fontSize:12,fontWeight:600}}>
+                Quitar foto
+              </button>
+            )}
+          </div>
+          <div style={{display:'flex',gap:10,alignItems:'center'}}>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',flex:1}}>
+              {COLORS.map(c=>(
+                <button key={c} className={`swatch${form.cover_color===c?' on':''}`}
+                  style={{background:c,width:26,height:26}} onClick={()=>set('cover_color',c)}/>
+              ))}
+            </div>
+            <label style={{cursor:'pointer',flexShrink:0}}>
+              <input type="file" accept="image/*" style={{display:'none'}} onChange={uploadCover}/>
+              <span className="btn btn-secondary" style={{height:34,padding:'0 12px',fontSize:13}}>
+                <IImg s={14}/> Foto
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Título *</label>
+          <input className="input" placeholder="Ej. Pasta al pesto" value={form.title} onChange={e=>set('title',e.target.value)}/>
+        </div>
+        <div className="field">
+          <label>Descripción</label>
+          <textarea className="input textarea" placeholder="Una línea sobre la receta..." value={form.description} onChange={e=>set('description',e.target.value)}/>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:9,marginBottom:14}}>
+          <div className="field" style={{margin:0}}>
+            <label>Tiempo (min)</label>
+            <input className="input" type="number" min="1" value={form.minutes} onChange={e=>set('minutes',e.target.value)}/>
+          </div>
+          <div className="field" style={{margin:0}}>
+            <label>Porciones</label>
+            <input className="input" type="number" min="1" value={form.servings} onChange={e=>set('servings',e.target.value)}/>
+          </div>
+          <div className="field" style={{margin:0}}>
+            <label>Dificultad</label>
+            <select className="input" value={form.difficulty} onChange={e=>set('difficulty',e.target.value)}>
+              {['Fácil','Media','Difícil'].map(d=><option key={d}>{d}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="field">
+          <label>Categoría</label>
+          <select className="input" value={form.category_id} onChange={e=>set('category_id',e.target.value)}>
+            <option value="">Sin categoría</option>
+            {categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
+
+        {/* Ingredients */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',margin:'6px 0 10px'}}>
+          <span style={{fontSize:16,fontWeight:700}}>Ingredientes</span>
+          <button className="btn btn-ghost" style={{height:30,fontSize:13}} onClick={addIng}><IPlus s={13}/> Agregar</button>
+        </div>
+        {ings.map((ing,i)=>(
+          <div key={ing._id} className="ing-row">
+            <input className="input" placeholder="Ingrediente" value={ing.name} onChange={e=>updIng(i,'name',e.target.value)}/>
+            <input className="input" placeholder="Cant." type="number" min="0" step="0.1" value={ing.qty} onChange={e=>updIng(i,'qty',e.target.value)}/>
+            <input className="input" placeholder="Unidad" value={ing.unit} onChange={e=>updIng(i,'unit',e.target.value)}/>
+            <button className="icon-btn" style={{width:34,height:34}} onClick={()=>remIng(i)} disabled={ings.length===1}><IMinus s={13}/></button>
+          </div>
+        ))}
+
+        {/* Steps */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',margin:'16px 0 10px'}}>
+          <span style={{fontSize:16,fontWeight:700}}>Pasos</span>
+          <button className="btn btn-ghost" style={{height:30,fontSize:13}} onClick={addStep}><IPlus s={13}/> Agregar</button>
+        </div>
+        {steps.map((step,i)=>(
+          <div key={step._id} className="step-row">
+            <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+              <div style={{width:22,height:22,borderRadius:'50%',background:'var(--surface-2)',border:'1px solid var(--border)',display:'grid',placeItems:'center',fontSize:10,fontWeight:700,color:'var(--text-2)',flexShrink:0,marginTop:11}}>{i+1}</div>
+              <textarea className="input textarea" style={{minHeight:52}} placeholder={`Paso ${i+1}...`} value={step.text} onChange={e=>updStep(i,'text',e.target.value)}/>
+            </div>
+            <input className="input" placeholder="Timer (min)" type="number" min="0" value={step.timer} onChange={e=>updStep(i,'timer',e.target.value)}/>
+            <button className="icon-btn" style={{width:34,height:34,marginTop:11}} onClick={()=>remStep(i)} disabled={steps.length===1}><IMinus s={13}/></button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+function Profile({ authUser, profile, onUpdate, onSignOut, showToast, dark, onToggleDark }) {
+  const [name, setName] = useState(profile?.display_name||'');
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    if (!name.trim()) return;
+    setBusy(true);
+    const {error} = await sb.from('profiles').upsert({id:authUser.id,display_name:name.trim(),updated_at:new Date().toISOString()});
+    setBusy(false);
+    if (!error) { onUpdate({display_name:name.trim()}); showToast('Perfil actualizado'); }
+  };
+
+  return (
+    <div>
+      <div className="page-header"><h1 className="page-title">Mi perfil</h1></div>
+      <div className="inner" style={{paddingBottom:32}}>
+        <div style={{display:'flex',alignItems:'center',gap:14,padding:18,background:'var(--surface)',borderRadius:14,marginBottom:22,boxShadow:'var(--shadow)'}}>
+          <div style={{width:56,height:56,borderRadius:'50%',background:'var(--accent)',display:'grid',placeItems:'center',fontSize:20,color:'#fff',fontWeight:700,flexShrink:0}}>
+            {(profile?.display_name||authUser?.email||'?')[0].toUpperCase()}
+          </div>
+          <div>
+            <div style={{fontWeight:700,fontSize:16}}>{profile?.display_name||'Sin nombre'}</div>
+            <div style={{fontSize:13,color:'var(--text-2)'}}>{authUser?.email}</div>
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Nombre</label>
+          <input className="input" value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre"/>
+        </div>
+        <button className="btn btn-primary btn-full" onClick={save} disabled={busy||!name.trim()}>
+          {busy?<div className="spin" style={{color:'#fff'}}/>:'Guardar cambios'}
+        </button>
+
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 0',marginTop:18,borderTop:'1px solid var(--border)'}}>
+          <span style={{fontWeight:500}}>Modo oscuro</span>
+          <button onClick={onToggleDark} style={{display:'flex',alignItems:'center',gap:6,color:'var(--accent)',fontWeight:600,fontSize:14}}>
+            {dark?<><ISun s={16}/>Claro</>:<><IMoon s={16}/>Oscuro</>}
+          </button>
+        </div>
+        <button className="btn btn-secondary btn-full" style={{marginTop:8,color:'var(--danger)',borderColor:'rgba(255,59,48,.3)'}}
+          onClick={async()=>{ await sb.auth.signOut(); onSignOut(); }}>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+class EB extends React.Component {
+  constructor(p){super(p);this.state={err:null}}
+  static getDerivedStateFromError(e){return{err:e}}
+  render(){
+    if(this.state.err) return(
+      <div style={{padding:40,textAlign:'center'}}>
+        <h2 style={{marginBottom:10}}>Algo salió mal</h2>
+        <p style={{color:'var(--text-2)',marginBottom:20}}>{this.state.err.message}</p>
+        <button className="btn btn-primary" onClick={()=>this.setState({err:null})}>Reintentar</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+function App() {
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem('mr-theme')==='dark'; } catch { return false; }
+  });
+  const [user, setUser]       = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [recipes, setRecipes] = useState([]);
+  const [cats, setCats]       = useState([]);
+  const [menus, setMenus]     = useState([]);
+  const [route, setRoute]     = useState({screen:'home'});
+  const [toast, setToast]     = useState(null);
+  const toastT = useRef(null);
+  const screenRef = useRef(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark?'dark':'light');
+    try { localStorage.setItem('mr-theme', dark?'dark':'light'); } catch {}
+  }, [dark]);
+
+  useEffect(() => {
+    const {data:{subscription}} = sb.auth.onAuthStateChange((_,session) => {
+      const u = session?.user||null;
+      setUser(u); setLoading(false);
+      if (u) { loadAll(u.id); loadProfile(u.id); }
+      else { setRecipes([]); setCats([]); setMenus([]); setProfile(null); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const showToast = (msg, ms=2400) => {
+    setToast(msg);
+    clearTimeout(toastT.current);
+    toastT.current = setTimeout(()=>setToast(null), ms);
+  };
+
+  const loadProfile = async (uid) => {
+    try {
+      const {data} = await sb.from('profiles').select('*').eq('id',uid).maybeSingle();
+      if (data) setProfile(data);
+    } catch(e) {}
+  };
+
+  const loadAll = async (uid) => {
+    try {
+      const [cR,rR,mR] = await Promise.all([
+        sb.from('categories').select('*').order('position'),
+        sb.from('recipes')
+          .select('id,title,description,cover_url,cover_color,minutes,servings,difficulty,category_id,created_at')
+          .eq('author_id',uid).order('created_at',{ascending:false}),
+        sb.from('menus').select('*').eq('user_id',uid).order('created_at',{ascending:false}),
+      ]);
+      const recs = rR.data||[];
+      const catList = cR.data||[];
+      const cnt = recs.reduce((a,r)=>{ if(r.category_id) a[r.category_id]=(a[r.category_id]||0)+1; return a; },{});
+      setCats(catList.map(c=>({...c,count:cnt[c.id]||0})));
+      setRecipes(recs);
+      setMenus((mR.data||[]).map(m=>({...m,recipeCount:0})));
+    } catch(e) { console.warn('load error',e); }
+  };
+
+  const loadRecipe = async (id) => {
+    try {
+      const {data} = await sb.from('recipes')
+        .select('*,recipe_ingredients(*),recipe_steps(*)')
+        .eq('id',id).single();
+      if (!data) return null;
+      return {
+        ...data,
+        ingredients: (data.recipe_ingredients||[]).sort((a,b)=>a.position-b.position),
+        steps: (data.recipe_steps||[]).sort((a,b)=>a.position-b.position)
+          .map(s=>({...s,timer:s.timer_seconds?s.timer_seconds/60:null})),
+      };
+    } catch(e) { return null; }
+  };
+
+  const go = (screen, id=null, extra={}) => {
+    if (screen===null) { setRoute(r=>r._prev||{screen:'home'}); }
+    else { setRoute(r=>({screen,id,...extra,_prev:r})); }
+    screenRef.current?.scrollTo(0,0);
+  };
+
+  // ── Category CRUD
+  const createCat = async ({name,color}) => {
+    try {
+      const {data} = await sb.from('categories').insert({name,color,position:cats.length}).select().single();
+      if (data) setCats(p=>[...p,{...data,count:0}]);
+      showToast('Categoría creada');
+    } catch(e) { showToast('Error al crear'); }
+  };
+  const deleteCat = async (id) => {
+    try {
+      await sb.from('categories').delete().eq('id',id);
+      setCats(p=>p.filter(c=>c.id!==id));
+      showToast('Categoría eliminada');
+    } catch(e) { showToast('Error al eliminar'); }
+  };
+  const updateCat = async ({id,name,color}) => {
+    try {
+      await sb.from('categories').update({name,color}).eq('id',id);
+      setCats(p=>p.map(c=>c.id===id?{...c,name,color}:c));
+      showToast('Categoría actualizada');
+    } catch(e) { showToast('Error al actualizar'); }
+  };
+
+  // ── Menu CRUD
+  const createMenu = async ({title,cover}) => {
+    try {
+      const {data} = await sb.from('menus').insert({title,cover,user_id:user.id}).select().single();
+      if (data) setMenus(p=>[{...data,recipeCount:0},...p]);
+      showToast('Menú creado');
+    } catch(e) { showToast('Error al crear'); }
+  };
+  const deleteMenu = async (id) => {
+    try {
+      await sb.from('menus').delete().eq('id',id);
+      setMenus(p=>p.filter(m=>m.id!==id));
+      showToast('Menú eliminado');
+    } catch(e) { showToast('Error al eliminar'); }
+  };
+
+  // ── Recipe CRUD
+  const deleteRecipe = async (id) => {
+    try {
+      await sb.from('recipes').delete().eq('id',id);
+      setRecipes(p=>p.filter(r=>r.id!==id));
+      showToast('Receta eliminada');
+      go(null);
+    } catch(e) { showToast('Error al eliminar'); }
+  };
+
+  // ── Full recipe state for detail/edit
+  const [full, setFull] = useState(null);
+  useEffect(() => {
+    if ((route.screen==='recipe'||route.screen==='edit') && route.id) {
+      setFull(null);
+      loadRecipe(route.id).then(r=>{ if(r) setFull(r); });
+    }
+  }, [route.screen, route.id]);
+
+  if (loading) return (
+    <div style={{minHeight:'100dvh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)'}}>
+      <div className="spin" style={{width:30,height:30,borderTopColor:'var(--accent)',borderColor:'var(--border)'}}/>
+    </div>
+  );
+
+  if (!user) return <Login onLogin={u=>{setUser(u);loadAll(u.id);loadProfile(u.id);}}/>;
+
+  const TABS = [
+    {id:'home',    label:'Inicio',   Icon:IHome},
+    {id:'recipes', label:'Recetas',  Icon:IGrid},
+    {id:'menus',   label:'Menús',    Icon:IBook},
+    {id:'profile', label:'Perfil',   Icon:IUser},
+  ];
+  const activeTab = TABS.some(t=>t.id===route.screen) ? route.screen : '';
+  const isForm = route.screen==='create'||route.screen==='edit';
+  const spinner = <div style={{display:'flex',justifyContent:'center',padding:48}}><div className="spin" style={{width:26,height:26,borderTopColor:'var(--accent)',borderColor:'var(--border)'}}/></div>;
+
+  let body;
+  switch(route.screen) {
+    case 'create':
+      body = <RecipeForm categories={cats} authUser={user} onBack={()=>go(null)} showToast={showToast}
+        onSave={(id)=>{ loadAll(user.id); go('recipe',id); }}/>;
+      break;
+    case 'edit':
+      body = full
+        ? <RecipeForm recipe={full} categories={cats} authUser={user} showToast={showToast}
+            onBack={()=>go(null)} onSave={(id)=>{ loadAll(user.id); go('recipe',id); }}/>
+        : spinner;
+      break;
+    case 'recipe':
+      body = full
+        ? <RecipeDetail recipe={full} categories={cats} onBack={()=>go(null)}
+            onEdit={()=>go('edit',route.id)} onDelete={()=>deleteRecipe(route.id)}/>
+        : spinner;
+      break;
+    case 'cat':
+      body = <CatDetail catId={route.id} categories={cats} recipes={recipes} go={go} onBack={()=>go(null)}/>;
+      break;
+    case 'cats':
+      body = <Categories categories={cats} go={go} onCreate={createCat} onDelete={deleteCat} onUpdate={updateCat}/>;
+      break;
+    case 'menus':
+      body = <Menus menus={menus} go={go} onCreate={createMenu} onDelete={deleteMenu}/>;
+      break;
+    case 'menu':
+      body = <MenuDetail menuId={route.id} menus={menus} recipes={recipes} categories={cats} go={go} onBack={()=>go(null)}/>;
+      break;
+    case 'recipes':
+      body = <Recipes recipes={recipes} categories={cats} go={go}/>;
+      break;
+    case 'profile':
+      body = <Profile authUser={user} profile={profile} dark={dark} onToggleDark={()=>setDark(d=>!d)}
+        onUpdate={p=>setProfile(prev=>({...prev,...p}))} showToast={showToast}
+        onSignOut={()=>{ setUser(null); setProfile(null); }}/>;
+      break;
+    default:
+      body = <Home recipes={recipes} categories={cats} go={go} profile={profile}/>;
+  }
+
+  return (
+    <EB>
+      <div className="app">
+        <div className="screen" ref={screenRef}>{body}</div>
+        {!isForm && (
+          <nav className="bottom-nav">
+            {TABS.map(({id,label,Icon},i)=>(
+              <React.Fragment key={id}>
+                {i===2 && (
+                  <div className="nav-tab-add">
+                    <button className="nav-add-btn" onClick={()=>go('create')}>
+                      <IPlus s={22} sw={2.2}/>
+                    </button>
+                    <span style={{fontSize:10,fontWeight:500,color:'var(--text-3)',marginTop:2}}>Nueva</span>
+                  </div>
+                )}
+                <button className={`nav-tab${activeTab===id?' active':''}`} onClick={()=>go(id)}>
+                  <Icon s={22}/><span>{label}</span>
+                </button>
+              </React.Fragment>
+            ))}
+          </nav>
+        )}
+        {toast && <div className="toast">{toast}</div>}
+      </div>
+    </EB>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+<script>
+// Service Worker inline — solo se registra si el documento se sirve por HTTPS
+// (no funcionará abriendo el archivo desde file:// o desde OneDrive directo).
+(async () => {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
+  try {
+    const swCode = `
+      const CACHE = 'mis-recetas-v1';
+      const ASSETS = [self.location.origin + '/', self.location.href.replace(/sw\\.js.*/, '')];
+      self.addEventListener('install', e => { self.skipWaiting(); });
+      self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
+      self.addEventListener('fetch', e => {
+        const req = e.request;
+        if (req.method !== 'GET') return;
+        e.respondWith(
+          caches.open(CACHE).then(async cache => {
+            try {
+              const fresh = await fetch(req);
+              if (fresh && fresh.status === 200 && fresh.type === 'basic') cache.put(req, fresh.clone());
+              return fresh;
+            } catch (_) {
+              const cached = await cache.match(req);
+              if (cached) return cached;
+              throw _;
+            }
+          })
+        );
+      });
+    `;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    await navigator.serviceWorker.register(url, { scope: './' });
+    console.log('[SW] registrado');
+  } catch (err) {
+    console.warn('[SW] no se pudo registrar:', err);
+  }
+})();
+</script>
+</body>
+</html>
