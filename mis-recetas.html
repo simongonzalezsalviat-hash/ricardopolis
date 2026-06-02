@@ -1263,7 +1263,7 @@ function RecipeForm({ recipe, categories, authUser, onSave, onBack, showToast })
         // Insert new records at offset positions
         if (vi.length) {
           const {error} = await sb.from('recipe_ingredients').insert(
-            vi.map((x,pos)=>({recipe_id:rid,name:x.name.trim(),qty:parseFloat(x.qty)||null,unit:x.unit.trim()||null,position:pos+POS_OFFSET}))
+            vi.map((x,pos)=>({recipe_id:rid,name:x.name.trim(),qty:parseFloat(x.qty)||0,unit:x.unit.trim()||'',position:pos+POS_OFFSET}))
           );
           if (error) throw error;
         }
@@ -1285,7 +1285,7 @@ function RecipeForm({ recipe, categories, authUser, onSave, onBack, showToast })
         rid = data.id;
         if (vi.length) {
           const {error} = await sb.from('recipe_ingredients').insert(
-            vi.map((x,pos)=>({recipe_id:rid,name:x.name.trim(),qty:parseFloat(x.qty)||null,unit:x.unit.trim()||null,position:pos}))
+            vi.map((x,pos)=>({recipe_id:rid,name:x.name.trim(),qty:parseFloat(x.qty)||0,unit:x.unit.trim()||'',position:pos}))
           );
           if (error) throw error;
         }
